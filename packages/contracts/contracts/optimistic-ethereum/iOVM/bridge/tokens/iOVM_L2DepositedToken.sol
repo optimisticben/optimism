@@ -14,13 +14,15 @@ interface iOVM_L2DepositedToken {
     event WithdrawalInitiated(
         address indexed _from,
         address indexed _to,
-        uint256 _amount
+        uint256 _amount,
+        bytes _data
     );
 
     event DepositFinalized(
         address indexed _from,
         address indexed _to,
-        uint256 _amount
+        uint256 _amount,
+        bytes _data
     );
 
 

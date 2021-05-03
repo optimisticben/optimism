@@ -3,14 +3,14 @@ pragma solidity >0.5.0 <0.8.0;
 pragma experimental ABIEncoderV2;
 
 /* Interface Imports */
-import { iOVM_L2DepositedToken } from "../../../iOVM/bridge/tokens/iOVM_L2DepositedToken.sol";
+import { iOVM_L2TokenGateway } from "../../../iOVM/bridge/tokens/iOVM_L2TokenGateway.sol";
 import { iOVM_L1TokenGateway } from "../../../iOVM/bridge/tokens/iOVM_L1TokenGateway.sol";
 
 /* Library Imports */
 import { OVM_CrossDomainEnabled } from "../../../libraries/bridge/OVM_CrossDomainEnabled.sol";
 
 /**
- * @title Abs_L2DepositedToken
+ * @title Abs_L2TokenGateway
  * @dev An L2 Deposited Token is an L2 representation of funds which were deposited from L1.
  * Usually contract mints new tokens when it hears about deposits into the L1 ERC20 gateway.
  * This contract also burns the tokens intended for withdrawal, informing the L1 gateway to release L1 funds.
@@ -21,7 +21,7 @@ import { OVM_CrossDomainEnabled } from "../../../libraries/bridge/OVM_CrossDomai
  * Compiler used: optimistic-solc
  * Runtime target: OVM
  */
-abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomainEnabled {
+abstract contract Abs_L2TokenGateway is iOVM_L2TokenGateway, OVM_CrossDomainEnabled {
 
     /*******************
      * Contract Events *
@@ -90,7 +90,7 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
      * param _to Address being withdrawn to
      * param _amount Amount being withdrawn
      */
-    function _handleInitiateWithdrawal(
+    function _handleInitiateOutboundTransfer(
         address, // _to,
         uint // _amount
     )
@@ -107,7 +107,7 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
      * param _to Address being deposited to on L2
      * param _amount Amount which was deposited on L1
      */
-    function _handleFinalizeDeposit(
+    function _handleFinalizeInboundTransfer(
         address, // _to
         uint // _amount
     )
@@ -121,9 +121,9 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
      * @dev Overridable getter for the *L1* gas limit of settling the withdrawal, in the case it may be
      * dynamic, and the above public constant does not suffice.
      */
-    function getFinalizeWithdrawalL1Gas()
+    function getFinalizationGas()
         public
-        view
+        pure
         virtual
         returns(
             uint32
@@ -141,7 +141,7 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
      * @dev initiate a withdraw of some tokens to the caller's account on L1
      * @param _amount Amount of the token to withdraw
      */
-    function withdraw(
+    function outboundTransfer(
         uint _amount,
         bytes calldata _data
     )
@@ -150,7 +150,7 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
         virtual
         onlyInitialized()
     {
-        _initiateWithdrawal(
+        _initiateOutboundTransfer(
             msg.sender,
             msg.sender,
             _amount,
@@ -163,7 +163,7 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
      * @param _to L1 adress to credit the withdrawal to
      * @param _amount Amount of the token to withdraw
      */
-    function withdrawTo(
+    function outboundTransferTo(
         address _to,
         uint _amount,
         bytes calldata _data
@@ -173,7 +173,7 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
         virtual
         onlyInitialized()
     {
-        _initiateWithdrawal(
+        _initiateOutboundTransfer(
             msg.sender,
             _to,
             _amount,
@@ -188,7 +188,7 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
      * @param _amount Amount of the token to withdraw
      * @param _amount Amount of the token to withdraw
      */
-    function _initiateWithdrawal(
+    function _initiateOutboundTransfer(
         address _from,
         address _to,
         uint _amount,
@@ -197,11 +197,11 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
         internal
     {
         // Call our withdrawal accounting handler implemented by child contracts (usually a _burn)
-        _handleInitiateWithdrawal(_to, _amount);
+        _handleInitiateOutboundTransfer(_to, _amount);
 
-        // Construct calldata for l1TokenGateway.finalizeWithdrawal(_to, _amount)
+        // Construct calldata for l1TokenGateway.finalizeInboundTransfer(_to, _amount)
         bytes memory message = abi.encodeWithSelector(
-            iOVM_L1TokenGateway.finalizeWithdrawal.selector,
+            iOVM_L1TokenGateway.finalizeInboundTransfer.selector,
             _from,
             _to,
             _amount,
@@ -212,10 +212,10 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
         sendCrossDomainMessage(
             address(l1TokenGateway),
             message,
-            getFinalizeWithdrawalL1Gas()
+            getFinalizationGas()
         );
 
-        emit WithdrawalInitiated(msg.sender, _to, _amount);
+        emit OutboundTransferInitiated(msg.sender, _to, _amount, _data);
     }
 
     /************************************
@@ -229,9 +229,9 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
      *
      * @param _to Address to receive the withdrawal at
      * @param _amount Amount of the token to withdraw
-    * @param _data Data provided by the sender on L1.
+     * @param _data Data provided by the sender on L1.
      */
-    function finalizeDeposit(
+    function finalizeInboundTransfer(
         address _from,
         address _to,
         uint _amount,
@@ -243,7 +243,7 @@ abstract contract Abs_L2DepositedToken is iOVM_L2DepositedToken, OVM_CrossDomain
         onlyInitialized()
         onlyFromCrossDomainAccount(address(l1TokenGateway))
     {
-        _handleFinalizeDeposit(_to, _amount);
-        emit DepositFinalized(_from, _to, _amount);
+        _handleFinalizeInboundTransfer(_to, _amount);
+        emit InboundTransferFinalized(_from, _to, _amount, _data);
     }
 }
