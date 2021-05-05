@@ -1,6 +1,8 @@
 /* External Imports */
-import { ethers } from 'ethers'
+import { ethers, logger } from 'ethers'
+import { Logger } from '@eth-optimism/common-ts'
 import { Provider, TransactionReceipt } from '@ethersproject/abstract-provider'
+
 
 export interface Layer {
   provider: Provider
@@ -16,10 +18,12 @@ export class Watcher {
   public l1: Layer
   public l2: Layer
   public NUM_BLOCKS_TO_FETCH: number = 10_000_000
+  protected logger: Logger
 
   constructor(opts: WatcherOptions) {
     this.l1 = opts.l1
     this.l2 = opts.l2
+    this.logger = new Logger({ name: 'watcher' })
   }
 
   public async getMessageHashesFromL1Tx(l1TxHash: string): Promise<string[]> {
@@ -73,14 +77,18 @@ export class Watcher {
     msgHash: string,
     pollForPending: boolean = true
   ): Promise<TransactionReceipt> {
+    this.logger.info('in the watcher!')
     const blockNumber = await layer.provider.getBlockNumber()
     const startingBlock = Math.max(blockNumber - this.NUM_BLOCKS_TO_FETCH, 0)
+    this.logger.info(msgHash)
+
     const filter = {
       address: layer.messengerAddress,
       topics: [ethers.utils.id(`RelayedMessage(bytes32)`)],
       fromBlock: startingBlock,
     }
     const logs = await layer.provider.getLogs(filter)
+    this.logger.info('logs', logs)
     const matches = logs.filter((log: any) => log.data === msgHash)
 
     // Message was relayed in the past

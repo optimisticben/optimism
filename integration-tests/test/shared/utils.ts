@@ -94,8 +94,8 @@ export const fundUser = async (
 ) => {
   const value = BigNumber.from(amount)
   const tx = recipient
-    ? gateway.outboundTransferTo(recipient, "0x", { value })
-    : gateway.outboundTransfer("0x", { value })
+    ? gateway.outboundTransferTo(recipient, '0x', { value })
+    : gateway.outboundTransfer('0x', { value })
   await waitForXDomainTransaction(watcher, tx, Direction.L1ToL2)
 }
 

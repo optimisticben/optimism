@@ -47,6 +47,7 @@ export const waitForXDomainTransaction = async (
   tx: Promise<TransactionResponse> | TransactionResponse,
   direction: Direction
 ): Promise<CrossDomainMessagePair> => {
+  console.log('watching!')
   const { src, dest } =
     direction === Direction.L1ToL2
       ? { src: watcher.l1, dest: watcher.l2 }
@@ -57,17 +58,23 @@ export const waitForXDomainTransaction = async (
   // get the receipt and the full transaction
   const receipt = await tx.wait()
   const fullTx = await src.provider.getTransaction(tx.hash)
-
+  console.log('post fulltx')
   // get the message hash which was created on the SentMessage
   const [xDomainMsgHash] = await watcher.getMessageHashesFromTx(src, tx.hash)
+  console.log('post xDomainMsgHash', xDomainMsgHash)
   // Get the transaction and receipt on the remote layer
+  // the watcher is not returning...
   const remoteReceipt = await watcher.getTransactionReceipt(
-    dest,
+    // not returning...
+    dest, // watcher.l2
     xDomainMsgHash
   )
+  console.log('remoteReceipt:', remoteReceipt)
+
   const remoteTx = await dest.provider.getTransaction(
     remoteReceipt.transactionHash
   )
+  console.log('remoteTx:', remoteTx)
 
   return {
     tx: fullTx,
