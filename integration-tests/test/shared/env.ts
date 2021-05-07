@@ -58,6 +58,8 @@ export class OptimismEnv {
     // fund the user if needed
     const balance = await l2Wallet.getBalance()
     if (balance.isZero()) {
+      console.log('starting fundUser()')
+      // @issue: the time out begins here:
       await fundUser(watcher, gateway, utils.parseEther('10'))
     }
 

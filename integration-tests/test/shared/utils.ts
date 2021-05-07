@@ -96,6 +96,8 @@ export const fundUser = async (
   const tx = recipient
     ? gateway.outboundTransferTo(recipient, '0x', { value })
     : gateway.outboundTransfer('0x', { value })
+    console.log('starting waitForXDomainTransaction()')
+    // @issue: the time out happens here:
   await waitForXDomainTransaction(watcher, tx, Direction.L1ToL2)
 }
 

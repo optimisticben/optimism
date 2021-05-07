@@ -77,32 +77,35 @@ export class Watcher {
     msgHash: string,
     pollForPending: boolean = true
   ): Promise<TransactionReceipt> {
-    this.logger.info('in the watcher!')
+    this.logger.info('in the watcher with args: ${...args}')
     const blockNumber = await layer.provider.getBlockNumber()
     const startingBlock = Math.max(blockNumber - this.NUM_BLOCKS_TO_FETCH, 0)
-    this.logger.info(msgHash)
+    this.logger.info(`waiting for ${msgHash}`)
 
     const filter = {
       address: layer.messengerAddress,
       topics: [ethers.utils.id(`RelayedMessage(bytes32)`)],
       fromBlock: startingBlock,
     }
+    this.logger.info(`filter: ${filter}`)
     const logs = await layer.provider.getLogs(filter)
-    this.logger.info('logs', logs)
+    this.logger.info(`logs: ${logs}`)
     const matches = logs.filter((log: any) => log.data === msgHash)
+    this.logger.info(`matches: ${matches}`)
 
     // Message was relayed in the past
     if (matches.length > 0) {
       if (matches.length > 1) {
         throw Error(
           'Found multiple transactions relaying the same message hash.'
-        )
+          )
+        }
+        return layer.provider.getTransactionReceipt(matches[0].transactionHash)
       }
-      return layer.provider.getTransactionReceipt(matches[0].transactionHash)
-    }
-    if (!pollForPending) {
-      return Promise.resolve(undefined)
-    }
+      this.logger.info(`matches: ${matches}`)
+      if (!pollForPending) {
+        return Promise.resolve(undefined)
+      }
 
     // Message has yet to be relayed, poll until it is found
     return new Promise(async (resolve, reject) => {
