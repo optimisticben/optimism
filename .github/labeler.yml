@@ -1,0 +1,20 @@
+---
+A-ci:
+  - any: ['.github/**/*']
+
+A-contracts:
+  - any: ['packages/contracts/**/*']
+
+A-geth:
+  - any: ['l2geth/**/*']
+
+A-integration-tests:
+  - any: ['integration-tests/**/*']
+
+A-ts-packages:
+  - any: ['packages/**/*']
+    all: ['!packages/contracts/**/*']
+
+
+# any changes to packages/x 
+#   that are not packages/contracts => A-ts-packages.
