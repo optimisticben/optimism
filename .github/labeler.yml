@@ -12,8 +12,24 @@ A-integration-tests:
   - any: ['integration-tests/**/*']
 
 A-ts-packages:
-  - any: ['packages/**/*', '!packages/contracts/**/*']
+  - all: ['packages/**/*', '!packages/contracts/**/*']
 
+M-batch-submitter:
+  - any: ['packages/batch-submitter/**/*']
 
-# any changes to packages/x 
-#   that are not packages/contracts => A-ts-packages.
+M-contracts:
+  - any: ['packages/contracts/**/*']
+
+M-core-utils:
+  - any: ['packages/core-utils/**/*']
+
+M-dtl:
+  - any: ['packages/data-transport-layer/**/*']
+
+M-hardhat-ovm:
+
+M-ops:
+  - any: ['ops/**/*']
+
+M-smock:
+  - any: ['packages/smock/**/*']
