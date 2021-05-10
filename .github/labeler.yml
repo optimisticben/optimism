@@ -12,7 +12,8 @@ A-integration-tests:
   - any: ['integration-tests/**/*']
 
 A-ts-packages:
-  - all: ['packages/**/*', '!packages/contracts/**/*']
+  - any: ['packages/**/*']
+    all: ['!packages/contracts/**/*']
 
 M-batch-submitter:
   - any: ['packages/batch-submitter/**/*']
