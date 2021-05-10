@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.6
+
+### Patch Changes
+
+- 751e2be: Add the support for different sequencer & proposer keys in the batch submitter.
+
 ## 0.2.5
 
 ### Patch Changes
