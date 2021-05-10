@@ -1,0 +1,1 @@
+Testing packages labeler for packages, non-contracts
