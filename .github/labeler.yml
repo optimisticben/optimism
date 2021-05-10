@@ -12,8 +12,7 @@ A-integration-tests:
   - any: ['integration-tests/**/*']
 
 A-ts-packages:
-  - any: ['packages/**/*']
-    all: ['!packages/contracts/**/*']
+  - any: ['packages/**/*', '!packages/contracts/**/*']
 
 
 # any changes to packages/x 
