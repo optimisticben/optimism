@@ -8,7 +8,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: master
+          ref: develop
 
       - name: Require-reviewers
         uses: travelperk/label-requires-reviews-action@v0.1
