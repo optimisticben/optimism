@@ -36,12 +36,12 @@ M-ops:
 M-smock:
   - any: ['packages/smock/**/*']
 
-A-single-review:
+A-double-review:
   - all:
-      - packages/smock/**/*
-      - packages/core-utils/**/*
-      - packages/hardhat-ovm/**/*
-      - packages/common-ts/**/*
-      - examples/**/*
-      - integration-tests/**/*
-      - specs/**/*
+      - '!packages/smock/**/*'
+      - '!packages/core-utils/**/*'
+      - '!packages/hardhat-ovm/**/*'
+      - '!packages/common-ts/**/*'
+      - '!examples/**/*'
+      - '!integration-tests/**/*'
+      - '!specs/**/*'
