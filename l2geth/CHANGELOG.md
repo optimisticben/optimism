@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2
+
+### Patch Changes
+
+- 20242af: Fixes a bug in L2geth that causes it to skip the first deposit if there have been no deposits batch-submitted yet
+- de5e3dc: Updates `scripts/start.sh` with the mainnet config by default
+
 ## 0.3.1
 
 ### Patch Changes

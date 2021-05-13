@@ -1,5 +1,14 @@
 # @eth-optimism/message-relayer
 
+## 0.1.2
+
+### Patch Changes
+
+- 96a586e: Migrate bcfg interface to core-utils
+- fa4898a: Explicitly log error messages so that they do not show as empty objects
+- Updated dependencies [96a586e]
+  - @eth-optimism/core-utils@0.4.3
+
 ## 0.1.1
 
 ### Patch Changes

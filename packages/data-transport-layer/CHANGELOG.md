@@ -1,5 +1,14 @@
 # data transport layer
 
+## 0.3.1
+
+### Patch Changes
+
+- 96a586e: Migrate bcfg interface to core-utils
+- fa4898a: Explicitly log error messages so that they do not show as empty objects
+- Updated dependencies [96a586e]
+  - @eth-optimism/core-utils@0.4.3
+
 ## 0.3.0
 
 ### Minor Changes
