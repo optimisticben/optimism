@@ -1,11 +1,6 @@
 name: Label Reviews
 on:
-  workflow_dispatch:
   pull_request_review:
-    types:
-      - submitted
-      - edited
-      - dismissed
 
 jobs:
   require-reviewers:
