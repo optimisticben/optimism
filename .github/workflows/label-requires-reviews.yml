@@ -1,10 +1,7 @@
 name: Label Reviews
 on:
-  pull_request_review:
-    types:
-      - submitted
-      - edited
-      - dismissed
+  - pull_request_target
+
 jobs:
   require-reviewers:
     runs-on: ubuntu-18.04
