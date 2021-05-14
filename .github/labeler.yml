@@ -35,17 +35,3 @@ M-ops:
 
 M-smock:
   - any: ['packages/smock/**/*']
-
-A-double-review:
-  - any:
-      - 'l2geth/**/*'
-      - 'ops/**/*'
-      - 'packages/batch-submitter/**/*'
-      - 'packages/contracts/**/*'
-      - 'packages/data-transport-layer/**/*'
-      - 'packages/hardhat-ovm/**/*'
-      - 'packages/message-relayer/**/*'
-      - 'patches/**/*'
-      - 'specs/**/*'
-      - 'patches/**/*'
-

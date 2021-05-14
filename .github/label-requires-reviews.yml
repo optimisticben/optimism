@@ -1,3 +1,17 @@
 ---
-  - label: "A-double-review"
+  - label: A-ci
+    reviews: 2
+  - label: A-contracts
+    reviews: 2
+  - label: A-geth
+    reviews: 2
+  - label: M-batch-submitter
+    reviews: 2
+  - label: M-contracts
+    reviews: 2
+  - label: M-dtl
+    reviews: 2
+  - label: M-hardhat-ovm
+    reviews: 2
+  - label: M-ops
     reviews: 2
