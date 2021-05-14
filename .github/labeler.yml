@@ -1,4 +1,7 @@
 ---
+A-2-reviewers:
+- any: ['packages/hardhat-ovm/**/*', 'ops/**/*']
+
 A-ci:
   - any: ['.github/**/*']
 
@@ -36,5 +39,3 @@ M-ops:
 M-smock:
   - any: ['packages/smock/**/*']
 
-A-2-reviewers:
-  - any: ['packages/hardhat-ovm/**/*', 'ops/**/*']
