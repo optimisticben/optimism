@@ -1,6 +1,6 @@
 ---
 A-2-reviewers:
-- any: ['packages/hardhat-ovm/**/*', 'ops/**/*']
+  - any: ['ops/**/*']
 
 A-ci:
   - any: ['.github/**/*']
