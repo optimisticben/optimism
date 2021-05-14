@@ -1,6 +1,8 @@
 ---
 A-2-reviewers:
-  - any: ['ops/**/*']
+  - any:
+      - 'ops/**/*'
+      - '.github/**/*'
 
 A-ci:
   - any: ['.github/**/*']
