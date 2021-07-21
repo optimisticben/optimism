@@ -1,18 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/ethereum-optimism/optimism/go/op_exporter/k8sClient"
 	"github.com/ethereum-optimism/optimism/go/op_exporter/version"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/ybbus/jsonrpc"
 	"gopkg.in/alecthomas/kingpin.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 var (
@@ -36,14 +40,19 @@ var (
 		"wait.minutes",
 		"Number of minutes to wait for the next block before marking provider unhealthy.",
 	).Default("10").Int()
-	//unhealthyTimePeriod = time.Minute * 10
+	enableK8sQuery = kingpin.Flag(
+		"k8s.enable",
+		"Enable kubernetes info lookup.",
+	).Default("true").Bool()
 )
 
 type healthCheck struct {
-	mu         *sync.RWMutex
-	height     uint64
-	healthy    bool
-	updateTime time.Time
+	mu             *sync.RWMutex
+	height         uint64
+	healthy        bool
+	updateTime     time.Time
+	allowedMethods []string
+	version        *string
 }
 
 func healthHandler(health *healthCheck) http.HandlerFunc {
@@ -67,10 +76,12 @@ func main() {
 	log.Infoln("Build context", version.BuildContext())
 
 	health := healthCheck{
-		mu:         new(sync.RWMutex),
-		height:     0,
-		healthy:    false,
-		updateTime: time.Now(),
+		mu:             new(sync.RWMutex),
+		height:         0,
+		healthy:        false,
+		updateTime:     time.Now(),
+		allowedMethods: nil,
+		version:        nil,
 	}
 	http.Handle("/metrics", promhttp.Handler())
 	http.Handle("/health", healthHandler(&health))
@@ -86,12 +97,31 @@ func main() {
 	})
 	go getRollupGasPrices()
 	go getBlockNumber(&health)
+	if *enableK8sQuery {
+		client, err := k8sClient.Newk8sClient()
+		if err != nil {
+			log.Fatal(err)
+		}
+		go getSequencerVersion(&health, client)
+	}
+	//go getAllowedMethods(&health, client)
 	log.Infoln("Listening on", *listenAddress)
 	if err := http.ListenAndServe(*listenAddress, nil); err != nil {
 		log.Fatal(err)
 	}
 
 }
+
+func getSequencerVersion(health *healthCheck, client *kubernetes.Clientset) {
+	pods, err := client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
+}
+
+// func getAllowedMethods(health *healthCheck) {
+// }
 
 func getBlockNumber(health *healthCheck) {
 	rpcClient := jsonrpc.NewClientWithOpts(*rpcProvider, &jsonrpc.RPCClientOpts{})
