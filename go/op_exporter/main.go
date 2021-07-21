@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"sync"
@@ -59,7 +60,7 @@ func healthHandler(health *healthCheck) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		health.mu.RLock()
 		defer health.mu.RUnlock()
-		w.Write([]byte(fmt.Sprintf(`{ "healthy": "%t" }`, health.healthy)))
+		w.Write([]byte(fmt.Sprintf(`{ "healthy": "%t", "version": "%s" }`, health.healthy, *health.version)))
 	}
 }
 
@@ -113,11 +114,32 @@ func main() {
 }
 
 func getSequencerVersion(health *healthCheck, client *kubernetes.Clientset) {
-	pods, err := client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
+	ns, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
 	if err != nil {
-		panic(err.Error())
+		log.Fatalf("Unable to read namespace file: %s", err)
 	}
-	fmt.Printf("There are %d pods in the cluster\n", len(pods.Items))
+	for {
+		getOpts := metav1.GetOptions{
+			TypeMeta:        metav1.TypeMeta{},
+			ResourceVersion: "",
+		}
+		sequencerStatefulSet, err := client.AppsV1().StatefulSets(string(ns)).Get(context.TODO(), "sequencer", getOpts)
+		if err != nil {
+			panic(err.Error())
+		}
+		for _, c := range sequencerStatefulSet.Spec.Template.Spec.Containers {
+			log.Infof("Checking container %s", c.Name)
+			switch {
+			case c.Name == "sequencer":
+				log.Infof("The sequencer version is: %s", c.Image)
+				health.version = &c.Image
+			default:
+				log.Infof("Unable to find the sequencer container in the statefulset?!?")
+			}
+		}
+
+		time.Sleep(time.Duration(30) * time.Second)
+	}
 }
 
 // func getAllowedMethods(health *healthCheck) {
