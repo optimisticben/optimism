@@ -105,7 +105,6 @@ func main() {
 		}
 		go getSequencerVersion(&health, client)
 	}
-	//go getAllowedMethods(&health, client)
 	log.Infoln("Listening on", *listenAddress)
 	if err := http.ListenAndServe(*listenAddress, nil); err != nil {
 		log.Fatal(err)
@@ -125,7 +124,9 @@ func getSequencerVersion(health *healthCheck, client *kubernetes.Clientset) {
 		}
 		sequencerStatefulSet, err := client.AppsV1().StatefulSets(string(ns)).Get(context.TODO(), "sequencer", getOpts)
 		if err != nil {
-			panic(err.Error())
+			unknownStatus := "UNKNOWN"
+			health.version = &unknownStatus
+			log.Errorf("Unable to retrieve a sequencer StatefulSet: %s", err)
 		}
 		for _, c := range sequencerStatefulSet.Spec.Template.Spec.Containers {
 			log.Infof("Checking container %s", c.Name)
@@ -141,9 +142,6 @@ func getSequencerVersion(health *healthCheck, client *kubernetes.Clientset) {
 		time.Sleep(time.Duration(30) * time.Second)
 	}
 }
-
-// func getAllowedMethods(health *healthCheck) {
-// }
 
 func getBlockNumber(health *healthCheck) {
 	rpcClient := jsonrpc.NewClientWithOpts(*rpcProvider, &jsonrpc.RPCClientOpts{})

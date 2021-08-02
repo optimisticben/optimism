@@ -16,5 +16,5 @@ func Newk8sClient() (client *kubernetes.Clientset, err error) {
 	if err != nil {
 		panic(err.Error())
 	}
-	return client, err
+	return client, nil
 }
