@@ -127,6 +127,7 @@ func getSequencerVersion(health *healthCheck, client *kubernetes.Clientset) {
 			unknownStatus := "UNKNOWN"
 			health.version = &unknownStatus
 			log.Errorf("Unable to retrieve a sequencer StatefulSet: %s", err)
+			continue
 		}
 		for _, c := range sequencerStatefulSet.Spec.Template.Spec.Containers {
 			log.Infof("Checking container %s", c.Name)
