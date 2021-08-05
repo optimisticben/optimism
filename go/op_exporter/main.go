@@ -117,7 +117,9 @@ func getSequencerVersion(health *healthCheck, client *kubernetes.Clientset) {
 	if err != nil {
 		log.Fatalf("Unable to read namespace file: %s", err)
 	}
+	ticker := time.NewTicker(30 * time.Second)
 	for {
+		<-ticker.C
 		getOpts := metav1.GetOptions{
 			TypeMeta:        metav1.TypeMeta{},
 			ResourceVersion: "",
@@ -140,7 +142,6 @@ func getSequencerVersion(health *healthCheck, client *kubernetes.Clientset) {
 			}
 		}
 
-		time.Sleep(time.Duration(30) * time.Second)
 	}
 }
 
